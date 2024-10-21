@@ -11,7 +11,7 @@ export class Company {
   @Prop()
   username: string;
 
-  @Prop()
+  @Prop({ select: false })
   password: string;
 
   @Prop()
@@ -76,3 +76,11 @@ export class Company {
 }
 
 export const CompanySchema = SchemaFactory.createForClass(Company);
+
+// Step 2: Add a toJSON method to the schema
+CompanySchema.set('toJSON', {
+  transform: function (doc, ret) {
+    delete ret.password;
+    return ret;
+  },
+});
