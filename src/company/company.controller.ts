@@ -6,24 +6,26 @@ import {
   Param,
   Patch,
   Post,
-  Put,
   Query,
 } from '@nestjs/common';
 import { CompanyService } from './company.service';
 import { Company } from '../schemas/company.schema';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
+import { Public } from 'src/auth/auth.decorator';
 
 @Controller('company')
 export class CompanyController {
-  constructor(private readonly companyService: CompanyService) { }
+  constructor(private readonly companyService: CompanyService) {}
 
+  @Public()
   @Get()
   async getAllCompanies(): Promise<Company[]> {
     return this.companyService.findAll();
   }
 
-  @Post()
+  @Public()
+  @Post('create')
   async createCompany(
     @Body()
     company: CreateCompanyDto,
@@ -56,5 +58,4 @@ export class CompanyController {
   remove(@Param('id') id: string) {
     return this.companyService.remove(id);
   }
-
 }

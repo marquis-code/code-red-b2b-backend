@@ -1,16 +1,29 @@
 import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import * as bcrypt from 'bcrypt';
 import { Company } from '../schemas/company.schema';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 
 @Injectable()
 export class CompanyService {
-  constructor(@InjectModel(Company.name) private companyModel: Model<Company>) { }
+  constructor(
+    @InjectModel(Company.name) private companyModel: Model<Company>,
+  ) {}
 
   async create(createCompanyDto: CreateCompanyDto): Promise<Company> {
     const createdCompany = new this.companyModel(createCompanyDto);
+    
+    // Use an object to filter by contactInformation
+    const user = await this.companyModel.findOne({
+      contactInformation: createCompanyDto.contactInformation,
+    });
+    
+    if(user) {
+      throw new Error('User already has an account.');
+    }
+  
     return await createdCompany.save();
   }
 
@@ -28,12 +41,17 @@ export class CompanyService {
   }
 
   async searchByName(search: string): Promise<Company[]> {
-    const companies = await this.companyModel.find({ 'name': new RegExp(search, 'i') });
+    const companies = await this.companyModel.find({
+      name: new RegExp(search, 'i'),
+    });
     return companies;
   }
 
   async update(uuid: string, updateCompanyDto: UpdateCompanyDto): Promise<any> {
-    const company = await this.companyModel.updateOne({ uuid }, updateCompanyDto);
+    const company = await this.companyModel.updateOne(
+      { uuid },
+      updateCompanyDto,
+    );
     return company;
   }
 
@@ -41,7 +59,4 @@ export class CompanyService {
     const company = await this.companyModel.deleteOne({ uuid });
     return company;
   }
-
-
-
 }
